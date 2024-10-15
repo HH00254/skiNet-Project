@@ -9,7 +9,7 @@ namespace Infrastructure.Data;
 
 public class ProductRepository(StoreContext context) : IProductRepository
 {
-    public StoreContext Context { get; } = context;
+    private StoreContext Context { get; } = context;
 
     public void AddProduct(Product product)
     {
