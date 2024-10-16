@@ -7,15 +7,18 @@ namespace Core.Specifications;
 
 public class ProductSpecification : BaseSpecification<Product>
 {
-    public ProductSpecification(string? brand, string? type, string? sort) : base(x =>
-        (string.IsNullOrWhiteSpace(brand) || x.Brand == brand) &&
-        (string.IsNullOrWhiteSpace(type)  || x.Type == type)
+    public ProductSpecification(ProductsSpecParams specParams) : base(x =>
+        (string.IsNullOrEmpty(specParams.Search) || x.Name.ToLower().Contains(specParams.Search)) &&
+        (specParams.Brands.Count == 0 || specParams.Brands.Contains(x.Brand)) &&
+        (specParams.Types.Count  == 0 || specParams.Types.Contains(x.Type))
     )
     {
         DefaultDictionary<string, Action> productActions = new(() => () => AddOrderBy(x => x.Name));
         productActions["priceAsc"]  = () =>{this.AddOrderBy(x => x.Price);};
         productActions["priceDesc"] = () =>{this.AddOrderByDescending(x => x.Price);};
 
-        productActions[sort is null? "": sort]();
+        this.ApplyPaging(specParams.PageSize * (specParams.PageIndex -1), specParams.PageSize);
+
+        productActions[specParams.Sort is null? "": specParams.Sort]();
     }
 }

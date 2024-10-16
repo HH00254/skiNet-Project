@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.CompilerServices;
+using API.RequestHelpers;
 using Core.Entities;
 using Core.Interfaces;
 using Core.Specifications;
@@ -9,19 +10,16 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.Controllers;
 
-[ApiController]
-[Route("api/[controller]")]
-public class ProductsController(IGenericRepository<Product> repo) : ControllerBase
+public class ProductsController(IGenericRepository<Product> repo) : BaseApiController
 {
     private IGenericRepository<Product> Repo { get; } = repo;
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Product>>> GetProducts(string? brand, string? type, string? sort)
+    public async Task<ActionResult<IEnumerable<Product>>> GetProducts
+        ([FromQuery]ProductsSpecParams specParams)
     {
-        var spec = new ProductSpecification(brand, type, sort);
-        var products = await this.Repo.ListAsync(spec);
-
-        return Ok(products);
+        var spec = new ProductSpecification(specParams);
+        return await CreatePageDResult(this.Repo, spec, specParams.PageIndex, specParams.PageSize);
     }
 
     [HttpGet("{id:int}")] // api/products/2
